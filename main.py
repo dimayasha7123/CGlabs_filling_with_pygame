@@ -1,5 +1,3 @@
-import math
-
 import pygame
 import time
 from pygame.locals import *
@@ -7,7 +5,7 @@ from math import *
 
 size = 1280, 720
 width, height = size
-pSize = 64, 36
+pSize = 128, 72
 pWidth, pHeight = pSize
 drawMatrix = []
 for i in range(0, pHeight):
@@ -44,7 +42,7 @@ screen = pygame.display.set_mode(size)
 screen.fill(WHITE)
 
 running = True
-drawing = True
+drawing = False
 colorInd = 3
 
 simple_fill = False
@@ -99,7 +97,7 @@ while running:
     if simple_fill:
         if len(stack) == 0:
             simple_fill = False
-            print('Все закрашено!')
+            print('Готово!')
             print(f'Закрашено пикселей: {filled}')
             print(f'Всего было в стеке пикселей: {poped}')
             print(f'Зря побывало в стеке пикселей: {(((poped - filled) * 100) / poped):.2f} %')
@@ -127,9 +125,90 @@ while running:
                 stack.append((y, x - 1))
                 print('Добавил пиксель слева')
 
-
     if line_fill:
-        pass
+        if len(stack) == 0:
+            line_fill = False
+            print('Готово!')
+            print(f'Закрашено пикселей: {filled}')
+            print(f'Всего было в стеке пикселей: {poped}')
+            print(f'Зря побывало в стеке пикселей: {(((poped - filled) * 100) / poped):.2f} %')
+            filled = 0
+            poped = 0
+        else:
+            pixel = stack.pop(-1)
+            y, x = pixel
+            print(f'Вытащил и закрасил пиксель: {(x, y)}')
+            poped += 1
+            filled += 1
+            drawMatrix[y][x] = 2
+            x_temp = x
+            x += 1
+            print('Пошел направо')
+            while drawMatrix[y][x] != 1:
+                drawMatrix[y][x] = 2
+                print(f'Закрасил пиксель {(x, y)}')
+                filled += 1
+                x += 1
+            x_right = x - 1
+            x = x_temp
+            x -= 1
+            print('Пошел налево')
+            while drawMatrix[y][x] != 1:
+                drawMatrix[y][x] = 2
+                print(f'Закрасил пиксель {(x, y)}')
+                filled += 1
+                x -= 1
+            x_left = x + 1
+            x = x_left
+            y -= 1
+            print('Пошел вверх')
+            while(x <= x_right):
+                flag = False
+                while drawMatrix[y][x] != 2 and drawMatrix[y][x] != 1 and x < x_right:
+                    if not flag:
+                        flag = True
+                    print('Пошел направо в поисках незакрашенных пикселей')
+                    x += 1
+                if flag:
+                    if x == x_right and drawMatrix[y][x] != 1 and drawMatrix != 2:
+                        print(f'Добавил пиксель {(x, y)} в стек')
+                        stack.append((y, x))
+                    else:
+                        print(f'Добавил пиксель {(x - 1, y)} в стек')
+                        stack.append((y, x - 1))
+                    flag = False
+                x_enter = x
+                while (drawMatrix[y][x] == 2 or drawMatrix[y][x] == 1) and x < x_right:
+                    print('Пошел направо в последнем while')
+                    x += 1
+                if x == x_enter:
+                    print('Пошел направо в последнем if')
+                    x += 1
+            x = x_left
+            y += 2
+            print('Пошел вниз')
+            while(x <= x_right):
+                flag = False
+                while drawMatrix[y][x] != 2 and drawMatrix[y][x] != 1 and x < x_right:
+                    if not flag:
+                        flag = True
+                    print('Пошел направо в поисках незакрашенных пикселей')
+                    x += 1
+                if flag:
+                    if x == x_right and drawMatrix[y][x] != 1 and drawMatrix != 2:
+                        print(f'Добавил пиксель {(x, y)} в стек')
+                        stack.append((y, x))
+                    else:
+                        print(f'Добавил пиксель {(x - 1, y)} в стек')
+                        stack.append((y, x - 1))
+                    flag = False
+                x_enter = x
+                while (drawMatrix[y][x] == 2 or drawMatrix[y][x] == 1) and x < x_right:
+                    print('Пошел направо в последнем while')
+                    x += 1
+                if x == x_enter:
+                    print('Пошел направо в последнем if')
+                    x += 1
 
 
     for w in range(0, pWidth):
@@ -138,7 +217,7 @@ while running:
             end = [round(i) for i in ((w + 1) * width / pWidth, (h + 1) * height / pHeight)]
             size = end[0] - start[0], end[1] - start[1]
             pygame.draw.rect(screen, drawColours.get(drawMatrix[h][w]), (start, size))
-            pygame.draw.rect(screen, GRAY, (start, size), 1)
+            #pygame.draw.rect(screen, GRAY, (start, size), 1)
 
     printFPS(False)
     pygame.display.update()
