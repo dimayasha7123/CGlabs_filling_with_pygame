@@ -1,3 +1,5 @@
+import copy
+
 import pygame
 import time
 from pygame.locals import *
@@ -5,12 +7,10 @@ from math import *
 
 size = 1280, 720
 width, height = size
-pSize = 128, 72
+pSize =128, 72
 pWidth, pHeight = pSize
-drawMatrix = []
-for i in range(0, pHeight):
-    row = [3] * pWidth
-    drawMatrix.append(row)
+drawMatrix = [[3] * pWidth for i in range(0, pHeight)]
+prevDrawMatrix = copy.deepcopy(drawMatrix)
 
 GRAY = (127, 127, 127)
 DARK_GRAY = (200, 200, 200)
@@ -35,7 +35,7 @@ def printFPS(console=True):
         print(f'FPS: {fps}')
     prevTime = currTime
     imgFps = fpsFont.render(str(fps), True, DARK_GREEN)
-    screen.blit(imgFps, (5, 5))
+    #screen.blit(imgFps, (5, 5))
 
 
 screen = pygame.display.set_mode(size)
@@ -53,8 +53,10 @@ filled = 0
 poped = 0
 
 drawColours = {1: DARK_GRAY, 2: LIGHT_BLUE, 3: WHITE}
+cadr = -1
 
 while running:
+    cadr += 1
     for event in pygame.event.get():
         if event.type == QUIT:
             running = False
@@ -210,16 +212,37 @@ while running:
                     print('Пошел направо в последнем if')
                     x += 1
 
+    pixelsToDraw = []
+    if cadr == 0:
+        for w in range(0, pWidth):
+            for h in range(0, pHeight):
+                pixelsToDraw.append((h, w, drawMatrix[h][w]))
+    else:
+        for w in range(0, pWidth):
+            for h in range(0, pHeight):
+                if drawMatrix[h][w] != prevDrawMatrix[h][w]:
+                    pixelsToDraw.append((h, w, drawMatrix[h][w]))
+                    prevDrawMatrix[h][w] = drawMatrix[h][w]
 
-    for w in range(0, pWidth):
-        for h in range(0, pHeight):
-            start = [round(i) for i in (w * width / pWidth, h * height / pHeight)]
-            end = [round(i) for i in ((w + 1) * width / pWidth, (h + 1) * height / pHeight)]
-            size = end[0] - start[0], end[1] - start[1]
-            pygame.draw.rect(screen, drawColours.get(drawMatrix[h][w]), (start, size))
-            #pygame.draw.rect(screen, GRAY, (start, size), 1)
+    for pixel in pixelsToDraw:
+        h = pixel[0]
+        w = pixel[1]
+        color = pixel[2]
+        start = [round(i) for i in (w * width / pWidth, h * height / pHeight)]
+        end = [round(i) for i in ((w + 1) * width / pWidth, (h + 1) * height / pHeight)]
+        size = end[0] - start[0], end[1] - start[1]
+        pygame.draw.rect(screen, drawColours.get(color), (start, size))
+        #pygame.draw.rect(screen, GRAY, (start, size), 1)
 
-    printFPS(False)
+    # for w in range(0, pWidth):
+    #     for h in range(0, pHeight):
+    #         start = [round(i) for i in (w * width / pWidth, h * height / pHeight)]
+    #         end = [round(i) for i in ((w + 1) * width / pWidth, (h + 1) * height / pHeight)]
+    #         size = end[0] - start[0], end[1] - start[1]
+    #         pygame.draw.rect(screen, drawColours.get(drawMatrix[h][w]), (start, size))
+    #         #pygame.draw.rect(screen, GRAY, (start, size), 1)
+
+    #printFPS(True)
     pygame.display.update()
 
 pygame.quit()
